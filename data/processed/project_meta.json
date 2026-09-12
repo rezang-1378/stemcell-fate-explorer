@@ -1,0 +1,37 @@
+{
+  "project": "StemCell Fate Explorer",
+  "dataset": "CellRank early human hematopoiesis (CD34+ bone marrow)",
+  "n_cells": 5780,
+  "n_genes_after_filtering": 14041,
+  "n_terminal_states": 6,
+  "terminal_states": [
+    "Mono_1",
+    "DCs_1",
+    "Mega",
+    "DCs_2",
+    "Ery_2",
+    "CLP"
+  ],
+  "marker_genes": [
+    "CD34",
+    "KIT",
+    "GATA1",
+    "GATA2",
+    "KLF1",
+    "TAL1",
+    "SPI1",
+    "MPO",
+    "IRF8",
+    "CEBPA",
+    "RUNX1",
+    "ELANE"
+  ],
+  "python": "3.12.3",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "cellrank": "2.3.2",
+  "scanpy": "1.12.4",
+  "anndata": "0.12.19",
+  "kernel": "PseudotimeKernel",
+  "time_key": "palantir_pseudotime",
+  "gpcca_terminal_method": "top_n"
+}

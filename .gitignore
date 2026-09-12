@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Raw / large biological data
+data/raw/
+*.h5ad
+
+# Local Streamlit settings and secrets
+.streamlit/
+secrets.toml
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary / backup files
+app_backup.py
+app_before_github.py
+*.bak
+*.tmp
+
+# Logs
+*.log
