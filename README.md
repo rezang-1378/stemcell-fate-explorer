@@ -3,11 +3,16 @@
 **Interactive single-cell fate mapping of early human hematopoiesis**  
 A reproducible bioinformatics portfolio project focused on stem-cell differentiation, lineage-fate inference, and scientific visualization.
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://stemcell-fate-explorer-ga7tintmqwwbt8rghe5dqb.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
 [![CellRank](https://img.shields.io/badge/CellRank-2.3.2-5B4B8A)](https://cellrank.readthedocs.io/)
 [![Scanpy](https://img.shields.io/badge/Scanpy-1.12.4-2E7D32)](https://scanpy.readthedocs.io/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B)](https://streamlit.io/)
 [![CI](https://github.com/rezang-1378/stemcell-fate-explorer/actions/workflows/python-ci.yml/badge.svg)](https://github.com/rezang-1378/stemcell-fate-explorer/actions/workflows/python-ci.yml)
+
+## 🚀 Live Demo
+
+**Interactive dashboard:** https://stemcell-fate-explorer-ga7tintmqwwbt8rghe5dqb.streamlit.app/
 
 ![StemCell Fate Explorer overview](assets/overview.png)
 
