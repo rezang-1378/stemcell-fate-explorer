@@ -1,207 +1,174 @@
-# 🧬 StemCell Fate Explorer
+# StemCell Fate Explorer
 
-**Interactive single-cell fate mapping of early human hematopoiesis**  
-A reproducible bioinformatics portfolio project focused on stem-cell differentiation, lineage-fate inference, and scientific visualization.
+**Computational exploration of human hematopoietic cell fate**
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://stemcell-fate-explorer-ga7tintmqwwbt8rghe5dqb.streamlit.app/)
-[![Python](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
-[![CellRank](https://img.shields.io/badge/CellRank-2.3.2-5B4B8A)](https://cellrank.readthedocs.io/)
-[![Scanpy](https://img.shields.io/badge/Scanpy-1.12.4-2E7D32)](https://scanpy.readthedocs.io/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B)](https://streamlit.io/)
-[![CI](https://github.com/rezang-1378/stemcell-fate-explorer/actions/workflows/python-ci.yml/badge.svg)](https://github.com/rezang-1378/stemcell-fate-explorer/actions/workflows/python-ci.yml)
+An interactive research application for exploring single-cell RNA-seq data, model-inferred lineage fates, and gene–fate associations using Scanpy, CellRank, GPCCA, Streamlit, and Plotly.
 
-## 🚀 Live Demo
+**Research and educational use only.** This project is not a clinical decision-support system. Inferred fates and associated genes are computational results, not experimentally validated cell outcomes or causal regulators.
 
-**Interactive dashboard:** https://stemcell-fate-explorer-ga7tintmqwwbt8rghe5dqb.streamlit.app/
+## Demo
 
-![StemCell Fate Explorer overview](assets/overview.png)
+[Open the Streamlit dashboard](https://stemcell-fate-explorer-ga7tintmqwwbt8rghe5dqb.streamlit.app/)
 
-## Scientific question
+![Dashboard overview](assets/overview.png)
 
-How do early human hematopoietic cells progress from progenitor states toward distinct terminal fates, and which genes are most strongly associated with those fate decisions?
+## Scientific scope
 
-This project applies a directional Markov-chain model to public human CD34+ bone-marrow single-cell RNA-seq data. Palantir pseudotime is used to construct a CellRank `PseudotimeKernel`, while `GPCCA` is used to infer stable macrostates, terminal states, and cell-level fate probabilities.
+The workflow asks how early human hematopoietic cells are organized along a pseudotime-directed transition model and which genes are associated with the resulting terminal-fate probabilities.
 
-The project is intended as a **research and bioinformatics portfolio application**, not a clinical decision-support system.
+The analysis script loads CellRank's public **human bone-marrow** dataset, preprocesses expression with Scanpy, constructs a CellRank `PseudotimeKernel`, and uses GPCCA to infer macrostates and terminal fates. **Palantir pseudotime is supplied by the source dataset; this repository does not recompute Palantir.** The implemented transition model uses pseudotime rather than RNA velocity.
 
-## Dataset
+The Streamlit application reads committed processed outputs. It does not rerun the analysis when a user changes dashboard controls.
 
-The analysis uses the public **CellRank early human hematopoiesis** dataset:
+## Recorded dataset and analysis
 
-- **Biological material:** human CD34+ bone-marrow cells
-- **Technology:** single-cell RNA sequencing
-- **Cells analyzed:** 5,780
-- **Genes in source dataset:** 27,876
-- **Genes retained after filtering:** 14,041
-- **Annotated cell states:** 10
-- **Inferred terminal fates:** 6
-- **Pseudotime:** precomputed Palantir pseudotime
+The checked-in [run metadata](data/processed/project_meta.json) records the following:
 
-The large source `.h5ad` file is downloaded locally by the analysis script and is not stored in this repository.
+| Item | Recorded value |
+| --- | --- |
+| Dataset | CellRank early human hematopoiesis, CD34+ bone marrow |
+| Cells | 5,780 |
+| Genes after filtering | 14,041 |
+| Inferred terminal fates | 6 |
+| Terminal-state labels | `Mono_1`, `DCs_1`, `Mega`, `DCs_2`, `Ery_2`, `CLP` |
+| Pseudotime field | `palantir_pseudotime` |
+| Kernel | `PseudotimeKernel` |
+| Terminal selection | GPCCA `top_n` |
+| Recorded environment | Python 3.12.3; CellRank 2.3.2; Scanpy 1.12.4; AnnData 0.12.19 |
 
-## Dashboard
+These values describe the committed analysis outputs, not a new analysis run or an independent replication.
 
-The Streamlit application contains seven interactive views:
+## Scientific architecture
 
-1. **Overview** — project metrics, cell atlas, cell-state composition, and data provenance.
-2. **Cell Atlas** — UMAP/t-SNE colored by cell state, pseudotime, or differentiation potential.
-3. **Fate Map** — cell-level probability of reaching each inferred terminal fate.
-4. **Putative Drivers** — genes ranked by association with lineage-fate probability, with downloadable CSV results.
-5. **Gene Explorer** — marker-gene expression on the cell atlas and across pseudotime.
-6. **Biological Insights** — interpretable lineage signatures and fate-specific molecular patterns.
-7. **Methods** — workflow, package versions, assumptions, limitations, and reproducibility details.
-
-### Fate probability explorer
-
-![CellRank fate map](assets/fate-map.png)
-
-### Biological interpretation
-
-![Biological insights](assets/biological-insights.png)
-
-## Biological QC highlights
-
-The inferred states and gene–fate associations show coherent lineage signatures:
-
-- **Erythroid (`Ery_2`)** — strong associations with `KLF1`, `ANK1`, `CA1`, `AHSP`, `SMIM1`, and `TFR2`.
-- **Megakaryocytic (`Mega`)** — `GP9`, `VWF`, `CLEC1B`, `PF4`, `GP6`, and `ITGA2B`.
-- **Lymphoid (`CLP`)** — `VPREB1`, `VPREB3`, `CD79A`, `CD79B`, `DNTT`, and `EBF1`.
-- **Dendritic (`DCs_1`)** — `LILRA4`, `JCHAIN`, `IRF7`, `SPIB`, and `IRF8`.
-- **`Mono_1` annotation** — strong `AZU1`, `MPO`, `ELANE`, `CTSG`, and `PRTN3` signal, consistent with a granulocytic/myeloid differentiation program and illustrating why computational labels should be interpreted together with molecular signatures.
-
-All exported fate probabilities passed numerical QC for the expected `[0, 1]` range.
-
-## Architecture
-
-```text
-Public human CD34+ bone-marrow scRNA-seq
-                    │
-                    ▼
-             Scanpy preprocessing
- filter → normalize → log1p → HVGs → PCA → kNN → UMAP
-                    │
-                    ▼
-             Palantir pseudotime
-                    │
-                    ▼
-        CellRank PseudotimeKernel
-                    │
-                    ▼
-           GPCCA / macrostates
-                    │
-                    ▼
-             Terminal states
-                    │
-          ┌─────────┴─────────┐
-          ▼                   ▼
-   Fate probabilities   Putative drivers
-          │                   │
-          └─────────┬─────────┘
-                    ▼
-       Lightweight processed outputs
-                    │
-                    ▼
-           Streamlit + Plotly
+```mermaid
+flowchart TD
+    A["Public bone-marrow dataset"] --> B["Scanpy expression preprocessing"]
+    A --> C["Supplied Palantir pseudotime"]
+    B --> D["CellRank PseudotimeKernel"]
+    C --> D
+    D --> E["GPCCA and terminal states"]
+    E --> F["Fate probabilities"]
+    F --> G["Gene–fate associations"]
+    B --> G
+    B --> H["Processed atlas and marker tables"]
+    F --> H
+    G --> H
+    H --> I["Streamlit and Plotly dashboard"]
 ```
 
-## Repository structure
+The current preparation script filters genes detected in fewer than five cells, normalizes to 10,000 counts per cell, applies `log1p`, marks 3,000 highly variable genes, and constructs PCA, a neighbor graph, and UMAP. PCA, neighbors, and UMAP receive `random_state=0`. GPCCA uses 10 macrostates; the default terminal-state count is six. The default driver export retains the top 100 associations per lineage.
 
-```text
-stemcell-fate-explorer/
-├── app.py
-├── assets/
-│   ├── overview.png
-│   ├── fate-map.png
-│   └── biological-insights.png
-├── data/
-│   ├── README.md
-│   └── processed/
-├── docs/
-│   └── scientific_scope.md
-├── scripts/
-│   └── prepare_data.py
-├── src/
-├── tests/
-├── requirements.txt
-├── requirements-analysis.txt
-├── Makefile
-└── .github/workflows/python-ci.yml
-```
+## Dashboard views
 
-## Quick start
+| View | Purpose |
+| --- | --- |
+| Overview | Recorded metrics, cell atlas, state composition, and provenance |
+| Cell Atlas | UMAP, optional source t-SNE, pseudotime, and available differentiation potential |
+| Fate Map | Model-inferred fate probabilities and summaries by annotated state |
+| Putative Drivers | Gene–fate associations and downloadable CSV selections |
+| Gene Explorer | Selected marker expression on UMAP and across supplied pseudotime |
+| Biological Insights | Exploratory interpretation of lineage-associated patterns |
+| Methods | Workflow, recorded environment, assumptions, and limitations |
 
-### Run the dashboard directly
+### Fate map
 
-The repository contains lightweight processed outputs so the dashboard can be launched without recomputing CellRank:
+![Fate probability explorer](assets/fate-map.png)
+
+### Exploratory biological interpretation
+
+![Biological insights view](assets/biological-insights.png)
+
+The interpretation view presents lineage-associated patterns from this dataset. Their biological plausibility is not independent validation, and dataset-derived labels should be read alongside expression patterns.
+
+## Installation and running
+
+### Dashboard from committed outputs
+
+Run the following in a terminal with Git and Python 3.12 available:
 
 ```bash
+git clone https://github.com/rezang-1378/stemcell-fate-explorer.git
+cd stemcell-fate-explorer
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-Then open:
+The environment activation command above is for Bash on Linux, macOS, or WSL. Open the local URL printed by Streamlit, normally `http://localhost:8501`.
 
-```text
-http://localhost:8501
-```
+The five dashboard input files are committed under `data/processed/`; the dashboard therefore does not require a new CellRank run. If any required input is absent, the app stops with an explanation rather than generating placeholder scientific results.
 
-### Reproduce the scientific analysis
+### Regenerate analysis outputs
 
-To regenerate the processed outputs from the public dataset:
+With the environment activated and the repository root as the working directory:
 
 ```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
 python -m pip install -r requirements-analysis.txt
 python scripts/prepare_data.py
 ```
 
-The first run downloads the public CellRank source dataset to `data/raw/`.
+The script loads the public source through `cellrank.datasets.bone_marrow()`, downloading it to `data/raw/bone_marrow.h5ad` when needed. It then writes to `data/processed/`, replacing the corresponding existing outputs.
 
-## Reproducibility
+For an isolated rerun that preserves the committed dashboard inputs:
 
-Reference versions for this portfolio build:
-
-- Python `3.12+`
-- CellRank `2.3.2`
-- Scanpy `1.12.4`
-
-The pipeline records package versions and key analysis parameters in:
-
-```text
-data/processed/project_meta.json
+```bash
+python scripts/prepare_data.py --out-dir /tmp/stemcell-fate-explorer-rerun
 ```
 
-A GitHub Actions workflow performs repository syntax/schema checks on pushes and pull requests.
+The dashboard continues to read `data/processed/`; an alternate output directory is for comparison and is not selected automatically by the app.
+
+## Repository map
+
+| Path | Responsibility |
+| --- | --- |
+| `app.py` | Dashboard views and visualization |
+| `scripts/prepare_data.py` | Public-data analysis and output generation |
+| `src/data_io.py` | Required-file checks and output loading |
+| `data/processed/` | Committed dashboard tables and recorded run metadata |
+| `data/README.md` | Data layout and handling |
+| `docs/scientific_scope.md` | Scope and interpretation limits |
+| `assets/` | Existing dashboard screenshots |
+| `requirements.txt` | Dashboard dependencies |
+| `requirements-analysis.txt` | Analysis dependencies |
+| `tests/test_repository_schema.py` | Required-path and README-term checks |
+| `.github/workflows/python-ci.yml` | Syntax and repository-schema checks |
+
+## Reproducibility and verification
+
+The analysis dependencies pin CellRank and Scanpy, while several other packages use version ranges. The recorded metadata captures selected package versions and platform information; **a complete environment lockfile, source checksum, and full parameter manifest are not currently provided**. Fixed seeds in selected preprocessing steps do not establish bit-for-bit reproducibility across environments.
+
+The existing repository checks are:
+
+```bash
+python -m compileall app.py scripts src tests
+python tests/test_repository_schema.py
+```
+
+GitHub Actions runs these checks on pushes and pull requests. They check Python syntax, required paths, and selected README terms. They do **not** test numerical fate-probability validity, rerun the full scientific pipeline, validate biological findings, or establish clinical performance.
+
+For a reproducibility comparison, retain the Git commit, actual installed package versions, source-data identity, analysis arguments, and exported outputs.
 
 ## Data policy
 
-- `data/raw/` and `.h5ad` source files are excluded from Git.
-- The lightweight `data/processed/` outputs required by the Streamlit dashboard are tracked in the repository.
-- Scientific results are generated from the real public dataset; the application does not fabricate placeholder biological results when outputs are missing.
+- Large raw data under `data/raw/` and `.h5ad` files are ignored by Git.
+- Lightweight processed Parquet, CSV, and JSON outputs used by the dashboard are intentionally committed.
+- The code license does not override upstream dataset terms, attribution requirements, or redistribution restrictions.
+- Virtual environments, local Streamlit settings, and common caches are excluded by the existing `.gitignore`.
 
-## Scientific limitations
+## Limitations
 
-Fate probabilities are model-derived quantities under the selected transition model and pseudotime representation.
+- Fate probabilities are conditional on the chosen transition model, supplied pseudotime, terminal states, and parameters. They are not experimentally measured outcome frequencies.
+- Gene–fate association does not demonstrate causality or establish a therapeutic target.
+- Pseudotime is not elapsed experimental time, and a two-dimensional embedding is a visualization rather than a direct lineage measurement.
+- This repository explores one public hematopoietic dataset; generalization to other tissues, donors, diseases, or perturbations has not been established here.
+- Independent biological validation and systematic parameter-sensitivity analyses are not demonstrated by the current repository checks.
+- The interface is not a clinical diagnostic tool or a validated cell-therapy decision system.
 
-The **Putative Drivers** view ranks genes by association with fate probabilities. These associations should **not** be interpreted as proof of causal regulation. Experimental validation would be required to establish regulatory mechanisms.
+See [scientific scope and limitations](docs/scientific_scope.md).
 
-Cell-state labels inherited from the dataset are also interpreted together with molecular signatures rather than treated as perfectly pure mature-cell identities.
+## Author and license
 
-## References
+**Reza Negahban** — Computational Biology and Bioinformatics.
 
-- CellRank documentation: https://cellrank.readthedocs.io/
-- CellRank human bone-marrow tutorial: https://cellrank.readthedocs.io/en/stable/notebooks/tutorials/general/100_getting_started.html
-- Setty et al. (2019), *Nature Biotechnology* — Palantir characterization of human hematopoiesis.
-- Lange et al. (2022), *Nature Methods* — CellRank fate mapping.
-
-## Author
-
-**Reza Negahban**  
-Bioinformatics / Computational Biology portfolio project.
-
-## License
-
-Code is released under the MIT License. The public dataset and upstream software retain their original licenses and citation requirements.
+The repository already contains an [MIT License](LICENSE) for its code. Upstream data and software retain their own terms and attribution requirements.
